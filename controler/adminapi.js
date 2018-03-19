@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const express = require('express');
 const passport = require('passport');
 const UsersRouter = express.Router();
@@ -49,7 +50,7 @@ UsersRouter.post('/',
     (req, res) => {
 
         if(!req.body.username || !req.body.email || !req.body.password){
-            return res.send(Utility.generateErrorMessage(ErrorTypes.INVALID_INPUT_DATA))
+            return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_INPUT_DATA))
         }
 
         if(req.body.role === 'admin' ){
@@ -57,7 +58,7 @@ UsersRouter.post('/',
         }
         let user = {
             username: req.body.username,
-            password: req.body.password,
+            password: crypto.createHash('sha1').update(req.body.password + 'chlp').digest('hex'),
             email: req.body.email,
             name: req.body.name,
             role: req.body.role

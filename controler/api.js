@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const UsersApi = require('./userapi');
@@ -6,7 +7,6 @@ const User = require('./../models/users');
 const Utility = require('./../services/utility')
 const middleware = require('./../services/middleware')
 const LocalStrategy = require('passport-local').Strategy;
-
 
 class ApiV1 {
     initialize(app) {
@@ -22,7 +22,7 @@ class ApiV1 {
                 .skipUndefined()
                 .where('email', 'like', req.query.email)
                 .where('username', 'like', req.query.username)
-                .andWhere('password', 'like',  req.query.password)
+                .andWhere('password', 'like', crypto.createHash('sha1').update(req.query.password + 'chlp').digest('hex'))
                 .then(users => {
                     if(users.length === 0){
                         return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_PASSWORD_OR_USERNAME))
@@ -41,7 +41,7 @@ class ApiV1 {
             (req, res) => {
 
                 if(!req.body.username || !req.body.email || !req.body.password){
-                    return res.send(Utility.generateErrorMessage(ErrorTypes.INVALID_INPUT_DATA))
+                    return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_INPUT_DATA))
                 }
 
                 if(req.body.role === "admin"){
@@ -57,7 +57,7 @@ class ApiV1 {
                 }
                 let user = {
                     username: req.body.username,
-                    password: req.body.password,
+                    password: crypto.createHash('sha1').update(req.body.password + 'chlp').digest('hex'),
                     email: req.body.email,
                     name: req.body.name,
                     role: req.body.role
@@ -67,6 +67,7 @@ class ApiV1 {
                     .skipUndefined()
                     .insert(user)
                     .then( users =>{
+
                         jwt.sign({ users }, 'secretkey', { expiresIn: '1h' }, (err, token) => {
                             res.json({
                                 token,users
