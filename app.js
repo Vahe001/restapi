@@ -1,31 +1,15 @@
-const express = require('express');
-const bodyparser = require('body-parser');
-const knexConfig = require('./knexfile');
-const { Model } = require('objection');
 const Knex = require('knex');
+const express = require('express');
 const passport = require('passport')
-const BearerStrategy = require('passport-http-bearer').Strategy;
 const User = require('./models/users');
+const { Model } = require('objection');
+const knexConfig = require('./knexfile');
+const bodyparser = require('body-parser');
+const Utility = require('./services/utility')
+
 
 const knex = Knex(knexConfig.development);
-
 Model.knex(knex);
-passport.use(new BearerStrategy(
-        (req) => {
-        (token, done) => {
-            User
-                .query()
-                .skipUndefined()
-                .where({ token: req.headers.Authorization }, (err, user) => {
-                    if (err) { return done(err); }
-                    if (!user) { return done(null, false); }
-                    return done(null, user, { scope: 'read' });
-                });
-        }
-    }
-    ));
-
-
 
 const app = express()
     .use(bodyparser.json())
@@ -33,6 +17,8 @@ const app = express()
     .use(bodyparser.urlencoded({
     extended: true
 }));
+
+require('./authorization')(app);
 
 const api_v1 = require('./controler/api');
 api_v1.initialize(app);

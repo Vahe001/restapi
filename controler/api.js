@@ -1,50 +1,59 @@
+const jwt = require('jsonwebtoken');
+const passport = require('passport');
 const UsersApi = require('./userapi');
 const AdminApi = require('./adminapi');
 const User = require('./../models/users');
 const Utility = require('./../services/utility')
-const passport = require('passport')
+const middleware = require('./../services/middleware')
 const LocalStrategy = require('passport-local').Strategy;
-const jwt = require('jsonwebtoken');
+
 
 class ApiV1 {
     initialize(app) {
         app.use('/api/users', UsersApi);
         app.use('/api/admin', AdminApi);
 
-
-        app.get('/login',async (req, res) => {
+        app.get('/login', (req, res) => {
             if(!(req.query.email || req.query.username) || !req.query.password){
                 return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_PASSWORD_OR_USERNAME))
             }
-            let users = await User
+            User
                 .query()
                 .skipUndefined()
                 .where('email', 'like', req.query.email)
                 .where('username', 'like', req.query.username)
                 .andWhere('password', 'like',  req.query.password)
-            if(users.length == 0){
-                return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_PASSWORD_OR_USERNAME))
-            }
-            jwt.sign({ users }, 'secretkey', { expiresIn: '60s' }, (err, token) => {
-                res.json({
-                    token, users
-                });
-            });
-        })
-            app.get('/logout', function (req, res) {
-                req.logout();
-                res.redirect('/');
-            });
+                .then(users => {
+                    if(users.length === 0){
+                        return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_PASSWORD_OR_USERNAME))
+                    }
+                    jwt.sign({ users }, 'secretkey', { expiresIn: '1h' }, (err, token) => {
+                        res.json({
+                            token, users
+                        });
+                    });
 
-            app.post('/signup',async (req, res) => {
+                })
+        })
+
+        app.post('/signup',
+            middleware.validateinputdata,
+            (req, res) => {
+
+                if(!req.body.username || !req.body.email || !req.body.password){
+                    return res.send(Utility.generateErrorMessage(ErrorTypes.INVALID_INPUT_DATA))
+                }
+
                 if(req.body.role === "admin"){
-                    let users = await User
+                    User
                         .query()
                         .skipUndefined()
                         .where('role', 'like', req.body.role)
-                    if(users.length != 0){
-                        return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.ADMIN_EXIST))
-                    }
+                        .then(users => {
+                            if(users.length != 0){
+                                return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.ADMIN_EXIST))
+                            }
+                        })
                 }
                 let user = {
                     username: req.body.username,
@@ -53,14 +62,22 @@ class ApiV1 {
                     name: req.body.name,
                     role: req.body.role
                 }
-                const Person = await User
+                User
                     .query()
                     .skipUndefined()
                     .insert(user)
-                res.send(Person)
-            })
-        }
+                    .then( users =>{
+                        jwt.sign({ users }, 'secretkey', { expiresIn: '1h' }, (err, token) => {
+                            res.json({
+                                token,users
+                            });
+                        });
+                    }).catch( err => {
+                        res.send(err)
+                    })
+                })
     }
+}
 
 
-    module.exports = new ApiV1();
+module.exports = new ApiV1();
