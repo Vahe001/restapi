@@ -82,7 +82,7 @@ UsersRouter.delete('/user',
             .query()
             .delete()
             .where( ('id'), 'like', id)
-            .then( users =>{
+            .then( () =>{
                 res.sendStatus(200)
             });
     })

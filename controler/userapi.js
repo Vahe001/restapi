@@ -17,7 +17,7 @@ UsersRouter.get('/:id',
         .where('id', 'like', req.query.id)
         .orderBy('name')
         .then(users => {
-            res.json(users);
+            res.send(users);
         })
 
 })
