@@ -20,11 +20,12 @@ class ApiV1 {
             User
                 .query()
                 .skipUndefined()
-                .where('email', 'like', req.query.email)
-                .where('username', 'like', req.query.username)
-                .andWhere('password', 'like', crypto.createHash('sha1').update(req.query.password + 'chlp').digest('hex'))
+                .findOne({email: req.query.email,
+                          username: req.query.username,
+                          password: crypto.createHash('sha1').update(req.query.password + 'chlp').digest('hex')
+                })
                 .then(users => {
-                    if(users.length === 0){
+                    if(!users){
                         return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_PASSWORD_OR_USERNAME))
                     }
                     jwt.sign({ users }, 'secretkey', { expiresIn: '1h' }, (err, token) => {
@@ -48,9 +49,9 @@ class ApiV1 {
                     User
                         .query()
                         .skipUndefined()
-                        .where('role', 'like', req.body.role)
+                        .findOne({'role': req.body.role})
                         .then(users => {
-                            if(users.length != 0){
+                            if(users){
                                 return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.ADMIN_EXIST))
                             }
                         })

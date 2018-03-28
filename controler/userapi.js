@@ -8,16 +8,16 @@ const middleware = require('./../services/middleware')
 UsersRouter.get('/:id',
     passport.authenticate('jwt', { session: false }),
     middleware._auth('user'),
-         (req, res) => {
+         async (req, res) => {
 
-     User
+    User
         .query()
         .skipUndefined()
         .where('name', 'like', req.query.name)
         .where('id', 'like', req.query.id)
         .orderBy('name')
         .then(users => {
-            res.send(users);
+            return res.send(users);
         })
 
 })

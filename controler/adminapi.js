@@ -43,7 +43,9 @@ UsersRouter.put('/:id',
                 res.send(users);
             });
     })
-UsersRouter.post('/',
+
+
+UsersRouter.post('/:id',
     middleware._auth('admin'),
     middleware.validateinputdata,
     passport.authenticate('jwt', { session: false }),
@@ -72,7 +74,7 @@ UsersRouter.post('/',
             })
     })
 
-UsersRouter.delete('/user',
+UsersRouter.delete('/user/:id',
     middleware._auth('admin'),
     passport.authenticate('jwt', { session: false }),
     (req, res) => {
@@ -80,7 +82,7 @@ UsersRouter.delete('/user',
         let id = req.query.id;
         User
             .query()
-            .delete()
+            .deleteById(1)
             .where( ('id'), 'like', id)
             .then( () =>{
                 res.sendStatus(200)

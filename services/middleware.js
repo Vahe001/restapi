@@ -7,8 +7,8 @@ class middleware {
         return async function (req, res, next) {
             const users = await User
                 .query()
-                .where('id', 'like', req.params.id)
-                if(users[0].role === permission){
+                .findById(req.params.id)
+                if(users.role === permission){
                     return next();
                 }
                 else
