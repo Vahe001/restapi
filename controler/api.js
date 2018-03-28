@@ -13,18 +13,17 @@ class ApiV1 {
         app.use('/api/users', UsersApi);
         app.use('/api/admin', AdminApi);
 
-        app.get('/login', (req, res) => {
+        app.get('/login', async (req, res) => {
             if(!(req.query.email || req.query.username) || !req.query.password){
                 return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_PASSWORD_OR_USERNAME))
             }
-            User
+            const users = await User
                 .query()
                 .skipUndefined()
                 .findOne({email: req.query.email,
                           username: req.query.username,
                           password: crypto.createHash('sha1').update(req.query.password + 'chlp').digest('hex')
                 })
-                .then(users => {
                     if(!users){
                         return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_PASSWORD_OR_USERNAME))
                     }
@@ -33,28 +32,25 @@ class ApiV1 {
                             token, users
                         });
                     });
-
-                })
         })
 
         app.post('/signup',
             middleware.validateinputdata,
-            (req, res) => {
+            async (req, res) => {
 
                 if(!req.body.username || !req.body.email || !req.body.password){
                     return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_INPUT_DATA))
                 }
 
                 if(req.body.role === "admin"){
-                    User
+                    const users = await User
                         .query()
                         .skipUndefined()
                         .findOne({'role': req.body.role})
-                        .then(users => {
-                            if(users){
-                                return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.ADMIN_EXIST))
-                            }
-                        })
+                    if(users){
+                        return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.ADMIN_EXIST))
+                    }
+
                 }
                 let user = {
                     username: req.body.username,
@@ -63,20 +59,16 @@ class ApiV1 {
                     name: req.body.name,
                     role: req.body.role
                 }
-                User
+                const users = await User
                     .query()
                     .skipUndefined()
                     .insert(user)
-                    .then( users =>{
 
                         jwt.sign({ users }, 'secretkey', { expiresIn: '1h' }, (err, token) => {
                             res.json({
                                 token,users
                             });
                         });
-                    }).catch( err => {
-                        res.send(err)
-                    })
                 })
     }
 }

@@ -10,22 +10,20 @@ UsersRouter.get('/:id',
     middleware._auth('user'),
          async (req, res) => {
 
-    User
+    const users = await User
         .query()
         .skipUndefined()
         .where('name', 'like', req.query.name)
         .where('id', 'like', req.query.id)
         .orderBy('name')
-        .then(users => {
             return res.send(users);
-        })
-
 })
+
 UsersRouter.put('/:id',
     middleware._auth('user'),
     middleware.validateinputdata ,
     passport.authenticate('jwt', { session: false }),
-    (req, res) => {
+    async (req, res) => {
 
         let id = req.params.id;
         let user = {
@@ -34,13 +32,11 @@ UsersRouter.put('/:id',
             email: req.body.email,
             name: req.body.name
         }
-        User
+        const users = await User
             .query()
             .skipUndefined()
             .patchAndFetchById(id, user)
-            .then(users => {
                 res.json(users);
-            })
     })
 
 

@@ -9,24 +9,22 @@ const middleware = require('./../services/middleware')
 UsersRouter.get('/:id',
     middleware._auth('admin'),
     passport.authenticate('jwt', { session: false }),
-        (req, res) => {
+    async (req, res) => {
 
-        User
+        const users = await User
             .query()
             .skipUndefined()
             .where('name', 'like', req.query.name)
             .where('id', 'like', req.query.id)
             .orderBy('name')
-            .then( users =>{
                 res.send(users);
-            })
-
     })
+
 UsersRouter.put('/:id',
     middleware._auth('admin'),
     middleware.validateinputdata,
     passport.authenticate('jwt', { session: false }),
-    (req, res) => {
+    async (req, res) => {
 
         let id = req.query.userid?req.query.userid:req.params.id;
         let user = {
@@ -35,13 +33,11 @@ UsersRouter.put('/:id',
             email: req.body.email,
             name: req.body.name
         }
-        User
+        const users = await User
             .query()
             .skipUndefined()
             .patchAndFetchById(id, user)
-            .then( users =>{
                 res.send(users);
-            });
     })
 
 
@@ -49,7 +45,7 @@ UsersRouter.post('/:id',
     middleware._auth('admin'),
     middleware.validateinputdata,
     passport.authenticate('jwt', { session: false }),
-    (req, res) => {
+    async (req, res) => {
 
         if(!req.body.username || !req.body.email || !req.body.password){
             return res.send(Utility.generateErrorMessage(Utility.ErrorTypes.INVALID_INPUT_DATA))
@@ -65,28 +61,24 @@ UsersRouter.post('/:id',
             name: req.body.name,
             role: req.body.role
         }
-        User
+        const users = await User
             .query()
             .skipUndefined()
             .insert(user)
-            .then( users =>{
                 res.send(users);
-            })
     })
 
 UsersRouter.delete('/user/:id',
     middleware._auth('admin'),
     passport.authenticate('jwt', { session: false }),
-    (req, res) => {
+    async (req, res) => {
 
         let id = req.query.id;
-        User
+        await User
             .query()
             .deleteById(1)
             .where( ('id'), 'like', id)
-            .then( () =>{
                 res.sendStatus(200)
-            });
     })
 
 

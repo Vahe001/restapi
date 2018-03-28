@@ -90,9 +90,7 @@ describe('/signup ', () => {
         .end((err, res) => {
             if(err) console.log("error ", err)
             res.body.should.be.a('object');
-            res.body.should.have.property('message')
-                .eql('Error: Admin can be only one.');
-
+            res.body.should.have.property('message').eql('Error: Admin can be only one.');
             done();
         });
     });
