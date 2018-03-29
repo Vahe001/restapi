@@ -238,7 +238,7 @@ describe('/api/admin/ POST', () => {
         .send(user)
         .end((err, res) => {
             if(err) console.log("error ", err)
-
+            user.id = res.body.id
             res.body.should.be.a('object');
             res.body.should.have.property('id');
             res.body.should.have.property('username');
@@ -257,11 +257,11 @@ describe('/api/admin/ POST', () => {
 describe('/api/admin/user DELETE', () => {
     it('it should delete user', (done) => {
         chai.request(app)
-        .post('/api/admin/' + admin.id + "?id=" + user.id)
+        .delete('/api/admin/user/' + admin.id + "?id=" + user.id)
         .set('Authorization', "Bearer  " + admintoken)
         .end((err, res) => {
+            console.log()
             if(err) console.log("error ", err)
-
             res.should.have.status(200);
             res.body.should.be.a('object');
             done();

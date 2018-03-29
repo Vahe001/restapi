@@ -7,15 +7,14 @@ class middleware {
         return async function (req, res, next) {
             const users = await User
                 .query()
-                .findById(req.params.id)
-                if(users.role === permission){
+                .where('id', 'like', req.params.id)
+                if(users[0].role === permission){
                     return next();
                 }
                 else
                  return res.send("permission denied")
-            }
-
         }
+    }
 
         static validateinputdata(req, res, next){
             if(req.body.username){

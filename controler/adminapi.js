@@ -76,8 +76,8 @@ UsersRouter.delete('/user/:id',
         let id = req.query.id;
         await User
             .query()
-            .deleteById(1)
-            .where( ('id'), 'like', id)
+            .delete()
+            .where(('id'), 'like', id)
                 res.sendStatus(200)
     })
 
