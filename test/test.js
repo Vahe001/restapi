@@ -143,7 +143,6 @@ describe('/api/users PUT', () => {
             username: 'Vahe007',
             email: 'Vahemelqon86@gmail.com'
         })
-
         .end((err, res) => {
             if(err) console.log("error ", err)
             res.body.should.be.a('object');
